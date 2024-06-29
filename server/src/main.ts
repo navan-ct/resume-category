@@ -2,6 +2,7 @@ import { type Server } from 'http'
 import mongoose from 'mongoose'
 
 import app from './app'
+import * as seederService from './services/seeder-service'
 import { ErrorMessages, InfoMessages } from './utils/constants'
 import logger from './utils/logger'
 
@@ -30,12 +31,14 @@ const main = async () => {
     logger.info(InfoMessages.DATABASE_DISCONNECTED)
     mongoose.connection.removeAllListeners()
   })
+
   try {
     await mongoose.connect(DATABASE_URI)
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error(error.stack || error.message)
-    }
+    const category = await seederService.seedCategory()
+    if (category) await seederService.seedResume(category)
+    logger.info(InfoMessages.DATABASE_SEEDED)
+  } catch (error: any) {
+    logger.error(error.stack || error.message)
     process.exit(1)
   }
 
