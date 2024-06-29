@@ -6,10 +6,6 @@ import { validateBody } from '../utils/validator'
 
 const router = Router()
 
-export interface ICategoryParams {
-  id: string
-}
-
 const categoryBodySchema = Joi.object({
   name: Joi.string().required()
 })

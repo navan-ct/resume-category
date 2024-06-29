@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 
 import categoryRouter from './routers/category-router'
+import resumeRouter from './routers/resume-router'
 import { ErrorMessages } from './utils/constants'
 import { errorHandler } from './utils/error'
 
@@ -14,6 +15,7 @@ app.disable('x-powered-by')
 app.use(helmet())
 app.use(compression())
 
+app.use('/api/resume', resumeRouter)
 app.use('/api/category', categoryRouter)
 
 app.get('/health', (_request, response) => {

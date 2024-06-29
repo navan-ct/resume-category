@@ -1,8 +1,7 @@
-import { Schema, model, type Types } from 'mongoose'
+import { Schema, model } from 'mongoose'
 
 export interface ICategory {
   name: string
-  resumes: Types.ObjectId[]
 }
 
 const categorySchema = new Schema<ICategory>({
@@ -10,13 +9,7 @@ const categorySchema = new Schema<ICategory>({
     type: String,
     required: true,
     unique: true
-  },
-  resumes: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Resume'
-    }
-  ]
+  }
 })
 
 const Category = model<ICategory>('Category', categorySchema)

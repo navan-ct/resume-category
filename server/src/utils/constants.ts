@@ -10,5 +10,6 @@ export const ErrorMessages = {
   GENERIC: 'Something went wrong',
   NOT_FOUND: 'Route not found',
   ENVIRONMENT_VARIABLE: 'Missing environment variables',
+  RESUME_ID: 'Resume not found',
   CATEGORY_ID: 'Category not found'
 } as const

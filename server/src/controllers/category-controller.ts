@@ -1,6 +1,5 @@
 import { type RequestHandler } from 'express'
 
-import { ICategoryParams } from '../routers/category-router'
 import * as categoryService from '../services/category-service'
 
 export const addCategory: RequestHandler = async (request, response) => {
@@ -10,12 +9,9 @@ export const addCategory: RequestHandler = async (request, response) => {
   })
 }
 
-export const renameCategory: RequestHandler<ICategoryParams> = async (
-  request,
-  response
-) => {
+export const renameCategory: RequestHandler = async (request, response) => {
   const category = await categoryService.renameCategory(
-    request.params.id,
+    request.params['id']!,
     request.body.name
   )
   response.status(200).json({
@@ -23,10 +19,7 @@ export const renameCategory: RequestHandler<ICategoryParams> = async (
   })
 }
 
-export const removeCategory: RequestHandler<ICategoryParams> = async (
-  request,
-  response
-) => {
-  await categoryService.removeCategory(request.params.id)
+export const removeCategory: RequestHandler = async (request, response) => {
+  await categoryService.removeCategory(request.params['id']!)
   response.sendStatus(204)
 }
