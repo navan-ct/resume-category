@@ -1,4 +1,4 @@
-import { type NextFunction, type Request, type Response } from 'express'
+import { type ErrorRequestHandler } from 'express'
 
 import { ErrorMessages } from './constants'
 import logger from './logger'
@@ -17,11 +17,11 @@ export class HttpError extends Error {
   }
 }
 
-export const errorHandler = (
-  error: Error,
-  _request: Request,
-  response: Response,
-  _next: NextFunction
+export const errorHandler: ErrorRequestHandler = (
+  error,
+  _request,
+  response,
+  _next
 ) => {
   logger.error(error.stack || error.message)
   const isHttpError = error instanceof HttpError

@@ -8,16 +8,15 @@ import { ErrorMessages } from '../utils/constants'
 const { RESUME_URL, ACCESS_KEY } = process.env
 
 interface IResumeResponseData {
-  record: {
+  record: Array<{
     name: string
     resume: string
-  }[]
+  }>
 }
 
 export const seedCategory = async () => {
   const categoryCount = await Category.countDocuments()
   if (categoryCount) return
-
   const category = await Category.create({ name: 'Uncategorized' })
   return category
 }
