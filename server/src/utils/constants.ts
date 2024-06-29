@@ -1,9 +1,15 @@
-export const Messages = {
-  ERROR_GENERIC: 'Something went wrong',
-  ERROR_NOT_FOUND: 'Route not found',
-  ERROR_ENVIRONMENT_VARIABLE: 'Missing environment variables',
-  INFO_DATABASE_CONNECTED: 'Connected to database',
-  INFO_DATABASE_DISCONNECTED: 'Disconnected from database',
-  INFO_SERVER_STARTED: 'Started the server',
-  INFO_SERVER_STOPPED: 'Stopped the server'
+export const InfoMessages = {
+  ErrorGeneric: 'Something went wrong',
+  ErrorNotFound: 'Route not found',
+  ErrorEnvironmentVariable: 'Missing environment variables',
+  DATABASE_CONNECTED: 'Connected to database',
+  DATABASE_DISCONNECTED: 'Disconnected from database',
+  SERVER_STARTED: 'Started the server',
+  SERVER_STOPPED: 'Stopped the server'
+} as const
+
+export const ErrorMessages = {
+  GENERIC: 'Something went wrong',
+  NOT_FOUND: 'Route not found',
+  ENVIRONMENT_VARIABLE: 'Missing environment variables'
 } as const

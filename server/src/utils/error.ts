@@ -1,6 +1,6 @@
 import { type NextFunction, type Request, type Response } from 'express'
 
-import { Messages } from './constants'
+import { ErrorMessages } from './constants'
 import logger from './logger'
 
 const { NODE_ENV } = process.env
@@ -30,7 +30,7 @@ export const errorHandler = (
   response.status(statusCode).json({
     message:
       NODE_ENV === 'production' && !isErrorPublic
-        ? Messages.ERROR_GENERIC
+        ? ErrorMessages.GENERIC
         : error.message
   })
 }

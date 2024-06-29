@@ -2,32 +2,32 @@ import { type Server } from 'http'
 import mongoose from 'mongoose'
 
 import app from './app'
-import { Messages } from './utils/constants'
+import { ErrorMessages, InfoMessages } from './utils/constants'
 import logger from './utils/logger'
 
 const { SERVER_PORT, DATABASE_URI } = process.env
 
 const shutDownGracefully = (server: Server) => () => {
   server.close(async () => {
-    logger.info(Messages.INFO_SERVER_STOPPED)
+    logger.info(InfoMessages.SERVER_STOPPED)
     await mongoose.connection.close()
   })
 }
 
 const main = async () => {
   if (!SERVER_PORT || !DATABASE_URI) {
-    logger.error(Messages.ERROR_ENVIRONMENT_VARIABLE)
+    logger.error(ErrorMessages.ENVIRONMENT_VARIABLE)
     process.exit(1)
   }
 
   mongoose.connection.on('connected', () => {
-    logger.info(Messages.INFO_DATABASE_CONNECTED)
+    logger.info(InfoMessages.DATABASE_CONNECTED)
   })
   mongoose.connection.on('error', (error) => {
     logger.error(error.stack || error.message)
   })
   mongoose.connection.on('disconnected', () => {
-    logger.info(Messages.INFO_DATABASE_DISCONNECTED)
+    logger.info(InfoMessages.DATABASE_DISCONNECTED)
     mongoose.connection.removeAllListeners()
   })
   try {
@@ -40,7 +40,7 @@ const main = async () => {
   }
 
   const server = app.listen(SERVER_PORT, () => {
-    logger.info(Messages.INFO_SERVER_STARTED)
+    logger.info(InfoMessages.SERVER_STARTED)
   })
 
   process.on('SIGINT', shutDownGracefully(server))
