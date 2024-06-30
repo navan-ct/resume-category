@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { type Types } from 'mongoose'
+import { type HydratedDocument } from 'mongoose'
 
-import Category from '../models/category'
+import Category, { type ICategory } from '../models/category'
 import Resume from '../models/resume'
 import { ErrorMessages } from '../utils/constants'
 
@@ -21,11 +21,10 @@ export const seedCategory = async () => {
   return category
 }
 
-export const seedResume = async (categoryId: Types.ObjectId) => {
+export const seedResume = async (category: HydratedDocument<ICategory>) => {
   if (!RESUME_URL || !ACCESS_KEY) {
     throw new Error(ErrorMessages.ENVIRONMENT_VARIABLE)
   }
-
   const resumeCount = await Resume.countDocuments()
   if (resumeCount) return
 
@@ -35,8 +34,10 @@ export const seedResume = async (categoryId: Types.ObjectId) => {
   const documents = response.data.record.map((item) => ({
     name: item.name,
     url: item.resume,
-    category: categoryId
+    category: category._id
   }))
   const resumes = await Resume.create(documents)
+  category.resumes = resumes.map((resume) => resume._id)
+  await category.save()
   return resumes
 }

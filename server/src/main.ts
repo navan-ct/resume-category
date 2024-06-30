@@ -35,7 +35,9 @@ const main = async () => {
   try {
     await mongoose.connect(DATABASE_URI)
     const category = await seederService.seedCategory()
-    if (category) await seederService.seedResume(category._id)
+    if (category) {
+      await seederService.seedResume(category)
+    }
     logger.info(InfoMessages.DATABASE_SEEDED)
   } catch (error: any) {
     logger.error(error.stack || error.message)

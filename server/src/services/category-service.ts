@@ -1,6 +1,15 @@
 import Category from '../models/category'
+import Resume from '../models/resume'
 import { ErrorMessages } from '../utils/constants'
 import { HttpError } from '../utils/error'
+
+export const findCategoryByIdOrFail = async (id: string) => {
+  const category = await Category.findById(id)
+  if (!category) {
+    throw new HttpError(ErrorMessages.CATEGORY_ID, 400)
+  }
+  return category
+}
 
 export const addCategory = async (name: string) => {
   const category = await Category.create({ name })
@@ -8,13 +17,17 @@ export const addCategory = async (name: string) => {
 }
 
 export const renameCategory = async (id: string, name: string) => {
-  const category = await Category.findById(id)
-  if (!category) throw new HttpError(ErrorMessages.CATEGORY_ID, 400)
+  const category = await findCategoryByIdOrFail(id)
   category.name = name
   await category.save()
   return category.toJSON()
 }
 
 export const removeCategory = async (id: string) => {
+  const category = await findCategoryByIdOrFail(id)
+  const uncategorized = await Category.findOne({ name: 'Uncategorized' })
+  uncategorized!.resumes = [...uncategorized!.resumes, ...category.resumes]
+  await Resume.updateMany({ category: id }, { category: uncategorized!._id })
+  await uncategorized!.save()
   await Category.findByIdAndDelete(id)
 }
