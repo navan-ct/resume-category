@@ -41,12 +41,15 @@ export const removeCategory = async (id: string) => {
 
 export const updateResumeOrder = async (id: string, resumes: string[]) => {
   const category = await findCategoryByIdOrFail(id)
+
+  // Verify that only the order has changed and not the list itself.
   if (
     category.resumes.length !== resumes.length ||
     category.resumes.some((id) => !resumes.includes(id.toString()))
   ) {
     throw new HttpError(ErrorMessages.RESUME_LIST, 400)
   }
+
   category.resumes = resumes.map((id) => new Types.ObjectId(id))
   await category.save()
   return category
