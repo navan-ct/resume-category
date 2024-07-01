@@ -34,6 +34,8 @@ const main = async () => {
 
   try {
     await mongoose.connect(DATABASE_URI)
+
+    // Seed the database with resumes and a default category.
     const category = await seederService.seedCategory()
     if (category) {
       await seederService.seedResume(category)

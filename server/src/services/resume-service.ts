@@ -25,12 +25,14 @@ export const updateCategory = async (resumeId: string, categoryId: string) => {
   const resume = await findResumeByIdOrFail(resumeId)
   const category = await findCategoryByIdOrFail(categoryId)
 
+  // Remove resume from its current category.
   const currentCategory = resume.category
   currentCategory.resumes = currentCategory.resumes.filter((resume) => {
     return !resume.equals(resumeId)
   })
   await currentCategory.save()
 
+  // Add resume to the new category.
   category.resumes = [...category.resumes, resume._id]
   await category.save()
 

@@ -28,16 +28,19 @@ export const seedResume = async (category: HydratedDocument<ICategory>) => {
   const resumeCount = await Resume.countDocuments()
   if (resumeCount) return
 
+  // Get resumes from the external API.
   const headers = { 'X-Access-Key': ACCESS_KEY }
   const response = await axios.get<IResumeResponseData>(RESUME_URL, { headers })
 
-  const documents = response.data.record.map((item) => ({
+  // Link between the resumes and the default category and save them.
+  const resumeDocuments = response.data.record.map((item) => ({
     name: item.name,
     url: item.resume,
     category: category._id
   }))
-  const resumes = await Resume.create(documents)
+  const resumes = await Resume.create(resumeDocuments)
   category.resumes = resumes.map((resume) => resume._id)
   await category.save()
+
   return resumes
 }

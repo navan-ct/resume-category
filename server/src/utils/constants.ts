@@ -11,5 +11,6 @@ export const ErrorMessages = {
   NOT_FOUND: 'Route not found',
   ENVIRONMENT_VARIABLE: 'Missing environment variables',
   RESUME_ID: 'Resume not found',
-  CATEGORY_ID: 'Category not found'
+  CATEGORY_ID: 'Category not found',
+  RESUME_LIST: 'Invalid resume list'
 } as const
