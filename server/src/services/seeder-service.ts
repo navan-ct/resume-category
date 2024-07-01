@@ -32,7 +32,7 @@ export const seedResume = async (category: HydratedDocument<ICategory>) => {
   const headers = { 'X-Access-Key': ACCESS_KEY }
   const response = await axios.get<IResumeResponseData>(RESUME_URL, { headers })
 
-  // Link between the resumes and the default category and save them.
+  // Link between the resumes and the default category.
   const resumeDocuments = response.data.record.map((item) => ({
     name: item.name,
     url: item.resume,
