@@ -27,23 +27,19 @@ export const updateCategory = async (
   resumes: string[]
 ) => {
   const resume = await findResumeByIdOrFail(resumeId)
-  const category = await findCategoryByIdOrFail(categoryId)
 
-  // Remove the resume from its current category.
-  const currentCategory = resume.category
-  currentCategory.resumes = currentCategory.resumes.filter((resume) => {
-    return !resume.equals(resumeId)
-  })
-  await currentCategory.save()
+  const hasCategoryChanged = !resume.category._id.equals(categoryId)
+  const category = hasCategoryChanged
+    ? await findCategoryByIdOrFail(categoryId)
+    : resume.category
 
-  // Verify that only the order has changed and not the list itself.
-  const hasListChanged =
-    category.resumes.length !== resumes.length - 1 ||
-    category.resumes.some(
-      (id) => !id.equals(resumeId) && !resumes.includes(id.toString())
-    )
-  if (hasListChanged) {
-    throw new HttpError(ErrorMessages.RESUME_LIST, 400)
+  // Remove the resume from its category.
+  if (hasCategoryChanged) {
+    const category = resume.category
+    category.resumes = category.resumes.filter((resume) => {
+      return !resume.equals(resumeId)
+    })
+    await category.save()
   }
 
   // Add the resume to the new category.
