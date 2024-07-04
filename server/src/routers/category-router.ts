@@ -9,9 +9,6 @@ const router = Router()
 const categoryBodySchema = Joi.object({
   name: Joi.string().required()
 })
-const categoryResumesBodySchema = Joi.object({
-  resumes: Joi.array().items(Joi.string()).required().min(1)
-})
 
 router.post(
   '/',
@@ -24,10 +21,5 @@ router.patch(
   categoryController.renameCategory
 )
 router.delete('/:id', categoryController.removeCategory)
-router.patch(
-  '/:id/resume',
-  validateBody(categoryResumesBodySchema),
-  categoryController.updateResumeOrder
-)
 
 export default router

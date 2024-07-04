@@ -6,14 +6,15 @@ import { validateBody } from '../utils/validator'
 
 const router = Router()
 
-const resumeBodySchema = Joi.object({
-  categoryId: Joi.string().required()
+const updateCategoryBodySchema = Joi.object({
+  categoryId: Joi.string().required(),
+  resumes: Joi.array().items(Joi.string()).required().min(1)
 })
 
 router.get('/', resumeController.getResumes)
 router.patch(
   '/:id',
-  validateBody(resumeBodySchema),
+  validateBody(updateCategoryBodySchema),
   resumeController.updateCategory
 )
 

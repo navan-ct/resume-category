@@ -1,4 +1,4 @@
-import { type HydratedDocument } from 'mongoose'
+import { Types, type HydratedDocument } from 'mongoose'
 
 import Category, { type ICategory } from '../models/category'
 import Resume from '../models/resume'
@@ -21,7 +21,11 @@ export const getResumes = async () => {
   return resumes
 }
 
-export const updateCategory = async (resumeId: string, categoryId: string) => {
+export const updateCategory = async (
+  resumeId: string,
+  categoryId: string,
+  resumes: string[]
+) => {
   const resume = await findResumeByIdOrFail(resumeId)
   const category = await findCategoryByIdOrFail(categoryId)
 
@@ -32,8 +36,18 @@ export const updateCategory = async (resumeId: string, categoryId: string) => {
   })
   await currentCategory.save()
 
+  // Verify that only the order has changed and not the list itself.
+  const hasListChanged =
+    category.resumes.length !== resumes.length - 1 ||
+    category.resumes.some(
+      (id) => !id.equals(resumeId) && !resumes.includes(id.toString())
+    )
+  if (hasListChanged) {
+    throw new HttpError(ErrorMessages.RESUME_LIST, 400)
+  }
+
   // Add the resume to the new category.
-  category.resumes = [...category.resumes, resume._id]
+  category.resumes = resumes.map((id) => new Types.ObjectId(id))
   await category.save()
 
   resume.category = category
