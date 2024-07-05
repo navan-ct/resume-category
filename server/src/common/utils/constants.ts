@@ -8,8 +8,8 @@ export const InfoMessages = {
 
 export const ErrorMessages = {
   GENERIC: 'Something went wrong',
-  NOT_FOUND: 'Route not found',
-  ENVIRONMENT_VARIABLE: 'Missing environment variables',
-  RESUME_ID: 'Resume not found',
-  CATEGORY_ID: 'Category not found'
+  NOT_FOUND: "Couldn't find the route",
+  ENVIRONMENT_VARIABLE: 'One or more environment variables are missing',
+  RESUME_ID: "Couldn't find the resume",
+  CATEGORY_ID: "Couldn't find the category"
 } as const

@@ -1,4 +1,5 @@
 import compression from 'compression'
+import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
@@ -9,6 +10,7 @@ import { errorHandler } from './common/utils/error'
 import resumeRouter from './resume/resume-router'
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 app.use(morgan('tiny'))
 app.disable('x-powered-by')

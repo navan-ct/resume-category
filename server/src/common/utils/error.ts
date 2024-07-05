@@ -23,7 +23,6 @@ export const errorHandler: ErrorRequestHandler = (
   response,
   _next
 ) => {
-  console.log('HERE')
   logger.error(error.stack || error.message)
   const isHttpError = error instanceof HttpError
   const isErrorPublic = isHttpError ? error.isPublic : false
