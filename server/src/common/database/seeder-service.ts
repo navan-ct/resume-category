@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { type HydratedDocument } from 'mongoose'
 
-import Category, { type ICategory } from '../models/category'
-import Resume from '../models/resume'
 import { ErrorMessages } from '../utils/constants'
+import Category, { type ICategory } from './models/category'
+import Resume from './models/resume'
 
 const { RESUME_URL, ACCESS_KEY } = process.env
 

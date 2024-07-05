@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import Joi from 'joi'
 
-import * as categoryController from '../controllers/category-controller'
-import { validateBody } from '../utils/validator'
+import { validateBody } from '../common/utils/validator'
+import * as categoryController from './category-controller'
 
 const router = Router()
 

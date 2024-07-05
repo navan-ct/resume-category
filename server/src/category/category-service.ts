@@ -1,7 +1,7 @@
-import Category from '../models/category'
-import Resume from '../models/resume'
-import { ErrorMessages } from '../utils/constants'
-import { HttpError } from '../utils/error'
+import Category from '../common/database/models/category'
+import Resume from '../common/database/models/resume'
+import { ErrorMessages } from '../common/utils/constants'
+import { HttpError } from '../common/utils/error'
 
 export const findCategoryByIdOrFail = async (id: string) => {
   const category = await Category.findById(id)

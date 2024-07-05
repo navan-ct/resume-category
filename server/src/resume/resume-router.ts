@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import Joi from 'joi'
 
-import * as resumeController from '../controllers/resume-controller'
-import { validateBody } from '../utils/validator'
+import { validateBody } from '../common/utils/validator'
+import * as resumeController from './resume-controller'
 
 const router = Router()
 

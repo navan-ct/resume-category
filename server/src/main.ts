@@ -2,9 +2,9 @@ import { type Server } from 'http'
 import mongoose from 'mongoose'
 
 import app from './app'
-import * as seederService from './services/seeder-service'
-import { ErrorMessages, InfoMessages } from './utils/constants'
-import logger from './utils/logger'
+import * as seederService from './common/database/seeder-service'
+import { ErrorMessages, InfoMessages } from './common/utils/constants'
+import logger from './common/utils/logger'
 
 const { SERVER_PORT, DATABASE_URI } = process.env
 

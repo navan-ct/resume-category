@@ -3,10 +3,10 @@ import express from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 
-import categoryRouter from './routers/category-router'
-import resumeRouter from './routers/resume-router'
-import { ErrorMessages } from './utils/constants'
-import { errorHandler } from './utils/error'
+import categoryRouter from './category/category-router'
+import { ErrorMessages } from './common/utils/constants'
+import { errorHandler } from './common/utils/error'
+import resumeRouter from './resume/resume-router'
 
 const app = express()
 app.use(express.json())

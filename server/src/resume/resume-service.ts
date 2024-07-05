@@ -1,10 +1,10 @@
 import { Types, type HydratedDocument } from 'mongoose'
 
-import Category, { type ICategory } from '../models/category'
-import Resume from '../models/resume'
-import { ErrorMessages } from '../utils/constants'
-import { HttpError } from '../utils/error'
-import { findCategoryByIdOrFail } from './category-service'
+import { findCategoryByIdOrFail } from '../category/category-service'
+import Category, { type ICategory } from '../common/database/models/category'
+import Resume from '../common/database/models/resume'
+import { ErrorMessages } from '../common/utils/constants'
+import { HttpError } from '../common/utils/error'
 
 export const findResumeByIdOrFail = async (id: string) => {
   const resume = await Resume.findById(id).populate<{
@@ -33,20 +33,21 @@ export const updateCategory = async (
     ? await findCategoryByIdOrFail(categoryId)
     : resume.category
 
-  // Remove the resume from its category.
   if (hasCategoryChanged) {
-    const category = resume.category
-    category.resumes = category.resumes.filter((resume) => {
+    // Remove the resume from its current category.
+    const currentCategory = resume.category
+    currentCategory.resumes = currentCategory.resumes.filter((resume) => {
       return !resume.equals(resumeId)
     })
-    await category.save()
+    await currentCategory.save()
+
+    resume.category = category
+    await resume.save()
   }
 
-  // Add the resume to the new category.
+  // Add the resume to the new category and/or update the order.
   category.resumes = resumes.map((id) => new Types.ObjectId(id))
   await category.save()
 
-  resume.category = category
-  await resume.save()
   return resume.toJSON()
 }
