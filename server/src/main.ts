@@ -6,7 +6,7 @@ import * as seederService from './common/database/seeder-service'
 import { ErrorMessages, InfoMessages } from './common/utils/constants'
 import logger from './common/utils/logger'
 
-const { SERVER_PORT, DATABASE_URI } = process.env
+const { PORT, DATABASE_URI } = process.env
 
 const shutDownGracefully = (server: Server) => () => {
   server.close(async () => {
@@ -16,7 +16,7 @@ const shutDownGracefully = (server: Server) => () => {
 }
 
 const main = async () => {
-  if (!SERVER_PORT || !DATABASE_URI) {
+  if (!PORT || !DATABASE_URI) {
     logger.error(ErrorMessages.ENVIRONMENT_VARIABLE)
     process.exit(1)
   }
@@ -46,7 +46,7 @@ const main = async () => {
     process.exit(1)
   }
 
-  const server = app.listen(SERVER_PORT, () => {
+  const server = app.listen(PORT, () => {
     logger.info(InfoMessages.SERVER_STARTED)
   })
 

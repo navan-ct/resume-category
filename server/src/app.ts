@@ -17,8 +17,10 @@ app.disable('x-powered-by')
 app.use(helmet())
 app.use(compression())
 
-app.use('/api/resume', resumeRouter)
-app.use('/api/category', categoryRouter)
+const BASE_PATH = '/api'
+
+app.use(`${BASE_PATH}/resume`, resumeRouter)
+app.use(`${BASE_PATH}/category`, categoryRouter)
 
 app.get('/health', (_request, response) => {
   response.sendStatus(200)
