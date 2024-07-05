@@ -56,7 +56,7 @@ export const { setResumes, setError, setIsLoading } = resumeSlice.actions
 
 export const fetchResumes = () => async (dispatch: StoreDispatch) => {
   try {
-    const response = await axios.get('/resumes', {
+    const response = await axios.get('/resume', {
       baseURL: import.meta.env.VITE_API_URL
     })
     dispatch(
