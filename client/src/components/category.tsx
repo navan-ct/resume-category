@@ -43,12 +43,10 @@ const Category = ({
         className="grid gap-3"
         style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
       >
-        {!resumes.length ? (
-          <ResumeSlot _id="id" category={_id} index={0} />
-        ) : null}
         {resumes.map((resume, index) => (
           <Resume key={resume._id} {...resume} index={index} />
         ))}
+        <ResumeSlot _id="id" category={_id} index={0} />
       </div>
     </div>
   )
