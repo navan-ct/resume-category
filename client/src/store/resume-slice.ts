@@ -18,14 +18,18 @@ export interface ICategory {
 }
 
 export interface IResumeState {
-  uncategorized: IResume[]
+  uncategorized: ICategory
   categories: ICategory[]
   error: string | null
   isLoading: boolean
 }
 
 const initialState: IResumeState = {
-  uncategorized: [],
+  uncategorized: {
+    _id: '',
+    name: 'Uncategorized',
+    resumes: []
+  },
   categories: [],
   error: null,
   isLoading: true
@@ -43,6 +47,26 @@ export const resumeSlice = createSlice({
       state.categories = action.payload.categories
     },
 
+    moveResume(state, action: PayloadAction<IMoveResumePayload>) {
+      const { resumeId, oldCategoryId, categoryId, atIndex } = action.payload
+
+      const oldCategory =
+        state.uncategorized._id === oldCategoryId
+          ? state.uncategorized
+          : state.categories.find((category) => category._id === oldCategoryId)
+      const resume = oldCategory!.resumes.find((item) => item._id === resumeId)
+      oldCategory!.resumes = oldCategory!.resumes.filter(
+        (item) => item._id !== resumeId
+      )
+
+      const category =
+        state.uncategorized._id === categoryId
+          ? state.uncategorized
+          : state.categories.find((category) => category._id === categoryId)
+      resume!.category = category!._id
+      category!.resumes.splice(atIndex, 0, resume!)
+    },
+
     setError(state, action: PayloadAction<IResumeState['error']>) {
       state.error = action.payload
     },
@@ -52,7 +76,8 @@ export const resumeSlice = createSlice({
   }
 })
 
-export const { setResumes, setError, setIsLoading } = resumeSlice.actions
+export const { setResumes, moveResume, setError, setIsLoading } =
+  resumeSlice.actions
 
 export const fetchResumes = () => async (dispatch: StoreDispatch) => {
   try {
@@ -61,7 +86,7 @@ export const fetchResumes = () => async (dispatch: StoreDispatch) => {
     })
     dispatch(
       setResumes({
-        uncategorized: response.data.uncategorized.resumes,
+        uncategorized: response.data.uncategorized,
         categories: response.data.categories
       })
     )
@@ -81,3 +106,10 @@ export const selectError = (state: StoreState) => state.resume.error
 export const selectIsLoading = (state: StoreState) => state.resume.isLoading
 
 export default resumeSlice.reducer
+
+interface IMoveResumePayload {
+  resumeId: string
+  oldCategoryId: string
+  categoryId: string
+  atIndex: number
+}

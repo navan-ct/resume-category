@@ -23,22 +23,12 @@ const App = () => {
       <div className="flex h-full w-full max-w-5xl gap-x-4 px-10 pt-5">
         <div className="flex h-full w-[calc(40%-0.5rem)] flex-shrink-0 flex-col pb-8">
           <Navbar />
-          <Category
-            className="flex-grow"
-            label="Uncategorized"
-            resumes={uncategorized}
-            columns={2}
-          />
+          <Category className="flex-grow" {...uncategorized} columns={2} />
         </div>
 
         <div className="flex h-full w-[calc(60%-0.5rem)] flex-shrink-0 flex-col gap-y-4 pt-[2.875rem]">
           {categories.map((category) => (
-            <Category
-              key={category._id}
-              label={category.name}
-              resumes={category.resumes}
-              columns={3}
-            />
+            <Category key={category._id} {...category} columns={3} />
           ))}
         </div>
       </div>
