@@ -1,99 +1,18 @@
-import { useDrag, useDrop } from 'react-dnd'
+import { useEffect, useState, useTransition } from 'react'
 
-import { useCallback, useEffect, useState, useTransition } from 'react'
-import * as api from '../api/resume'
-import { useDispatch, useSelector } from '../hooks/redux'
-import {
-  moveResume,
-  selectCategories,
-  selectUncategorized,
-  type ICategory,
-  type IResume
-} from '../store/resume-slice'
-import { Draggable } from '../utils/constants'
+import useDragDrop from '../hooks/use-drag-drop'
+import { type IResume } from '../store/resume-slice'
 
 export interface ResumeProps extends IResume {
   index: number
 }
 
 const Resume = ({ _id, name, category, index }: ResumeProps) => {
-  const dispatch = useDispatch()
-  const uncategorized = useSelector(selectUncategorized)
-  const categories = useSelector(selectCategories)
-
-  const findCategoryById = useCallback(
-    (id: string) => {
-      return id === uncategorized._id
-        ? uncategorized
-        : categories.find((category) => category._id === id)
-    },
-    [uncategorized, categories]
-  )
-
-  const findResume = useCallback(
-    (resumeId: string) => {
-      let category: ICategory
-      let resumeIndex = uncategorized.resumes.findIndex(
-        (resume) => resume._id === resumeId
-      )
-      if (resumeIndex === -1) {
-        for (const item of Object.values(categories)) {
-          resumeIndex = item.resumes.findIndex(
-            (resume) => resume._id === resumeId
-          )
-          if (resumeIndex !== -1) {
-            category = item
-            break
-          }
-        }
-      } else category = uncategorized
-
-      return {
-        index: resumeIndex,
-        resume: category!.resumes[resumeIndex]
-      }
-    },
-    [uncategorized, categories]
-  )
-
-  const [{ _isDragging }, drag] = useDrag(
-    {
-      type: Draggable.CARD,
-      item: { _id },
-      collect: (monitor) => ({
-        _isDragging: _id === monitor.getItem()?._id
-      })
-    },
-    [_id, index]
-  )
-
-  const [, drop] = useDrop(
-    () => ({
-      accept: Draggable.CARD,
-      hover(item: IItem) {
-        if (item._id !== _id) {
-          const resumeResult = findResume(item._id)
-          dispatch(
-            moveResume({
-              resumeId: resumeResult.resume._id,
-              oldCategoryId: resumeResult.resume.category,
-              categoryId: category,
-              atIndex: index
-            })
-          )
-        }
-      },
-      drop(item) {
-        const resumeResult = findResume(item._id)
-        const category = findCategoryById(resumeResult.resume.category)
-        api.updateResumeCategory(resumeResult.resume._id, {
-          categoryId: category!._id,
-          resumes: category!.resumes.map((resume) => resume._id)
-        })
-      }
-    }),
-    [findResume, findCategoryById]
-  )
+  const {
+    isDragging: _isDragging,
+    drag,
+    drop
+  } = useDragDrop(_id, category, index)
 
   const [isDragging, setIsDragging] = useState(false)
   const [, startTransition] = useTransition()
@@ -107,22 +26,20 @@ const Resume = ({ _id, name, category, index }: ResumeProps) => {
   return (
     <div
       ref={(node) => drag(drop(node))}
-      className={`flex h-36 items-end overflow-hidden rounded-md bg-neutral-50 shadow-sm outline-dashed outline-neutral-200 ${isDragging ? 'bg-transparent shadow-none outline-2' : 'outline-0'}`}
+      className={`flex h-36 items-end overflow-hidden rounded-md bg-neutral-50 shadow-sm outline-dashed outline-neutral-200 ${isDragging ? 'bg-transparent shadow-none outline-[3px]' : 'outline-0'}`}
     >
       {isDragging ? null : (
-        <span
-          className="w-full bg-white px-4 py-2.5 text-sm font-medium"
-          title={name}
-        >
-          {name}
-        </span>
+        <>
+          <span
+            className="z-50 w-full bg-white px-4 py-2.5 text-sm font-medium"
+            title={name}
+          >
+            {name}
+          </span>
+        </>
       )}
     </div>
   )
 }
 
 export default Resume
-
-interface IItem {
-  _id: string
-}

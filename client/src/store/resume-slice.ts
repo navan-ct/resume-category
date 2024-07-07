@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
-import axios from 'axios'
 
 import { type StoreDispatch, type StoreState } from '.'
+import * as api from '../api/resume'
 import { type ResponseError } from '../utils/types'
 
 export interface IResume {
@@ -32,7 +32,7 @@ const initialState: IResumeState = {
   },
   categories: [],
   error: null,
-  isLoading: true
+  isLoading: false
 }
 
 export const resumeSlice = createSlice({
@@ -67,6 +67,23 @@ export const resumeSlice = createSlice({
       category!.resumes.splice(atIndex, 0, resume!)
     },
 
+    addCategory(state, action: PayloadAction<ICategory>) {
+      state.categories = [...state.categories, action.payload]
+    },
+
+    removeCategory(state, action: PayloadAction<string>) {
+      const category = state.categories.find(
+        (category) => category._id === action.payload
+      )
+      state.uncategorized.resumes = [
+        ...state.uncategorized.resumes,
+        ...category!.resumes
+      ]
+      state.categories = state.categories.filter(
+        (category) => category._id !== action.payload
+      )
+    },
+
     setError(state, action: PayloadAction<IResumeState['error']>) {
       state.error = action.payload
     },
@@ -76,20 +93,20 @@ export const resumeSlice = createSlice({
   }
 })
 
-export const { setResumes, moveResume, setError, setIsLoading } =
-  resumeSlice.actions
+export const {
+  setResumes,
+  moveResume,
+  addCategory: addCategoryAction,
+  removeCategory,
+  setError,
+  setIsLoading
+} = resumeSlice.actions
 
 export const fetchResumes = () => async (dispatch: StoreDispatch) => {
   try {
-    const response = await axios.get('/resume', {
-      baseURL: import.meta.env.VITE_API_URL
-    })
-    dispatch(
-      setResumes({
-        uncategorized: response.data.uncategorized,
-        categories: response.data.categories
-      })
-    )
+    dispatch(setIsLoading(true))
+    const { uncategorized, categories } = await api.fetchResumes()
+    dispatch(setResumes({ uncategorized, categories }))
   } catch (_error) {
     const error = _error as ResponseError
     dispatch(setError(error.response?.data?.message || error.message))
@@ -97,6 +114,35 @@ export const fetchResumes = () => async (dispatch: StoreDispatch) => {
     dispatch(setIsLoading(false))
   }
 }
+
+export const addCategory = () => async (dispatch: StoreDispatch) => {
+  try {
+    dispatch(setIsLoading(true))
+    const category = await api.addCategory({ name: 'Untitled' })
+    if (category) {
+      dispatch(addCategoryAction(category))
+    }
+  } catch (_error) {
+    const error = _error as ResponseError
+    dispatch(setError(error.response?.data?.message || error.message))
+  } finally {
+    dispatch(setIsLoading(false))
+  }
+}
+
+export const removeCategoryById =
+  (id: string) => async (dispatch: StoreDispatch) => {
+    try {
+      dispatch(setIsLoading(true))
+      dispatch(removeCategory(id))
+      await api.removeCategory(id)
+    } catch (_error) {
+      const error = _error as ResponseError
+      dispatch(setError(error.response?.data?.message || error.message))
+    } finally {
+      dispatch(setIsLoading(false))
+    }
+  }
 
 export const selectUncategorized = (state: StoreState) => {
   return state.resume.uncategorized
