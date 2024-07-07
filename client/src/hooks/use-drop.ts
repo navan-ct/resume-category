@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-
 import { useDrop as useDropDnd } from 'react-dnd'
+
 import * as api from '../api/resume'
 import {
   type ICategory,
@@ -32,10 +32,14 @@ const useDrop = (_id: string, category: string, index: number) => {
   const findResume = useCallback(
     (resumeId: string) => {
       let category: ICategory
+
+      // Search for the resume in the uncategorized resume list.
       let resumeIndex = uncategorized.resumes.findIndex(
         (resume) => resume._id === resumeId
       )
+
       if (resumeIndex === -1) {
+        // Search for the resume in each category until found.
         for (const item of Object.values(categories)) {
           resumeIndex = item.resumes.findIndex(
             (resume) => resume._id === resumeId
@@ -58,6 +62,7 @@ const useDrop = (_id: string, category: string, index: number) => {
   const [, drop] = useDropDnd(
     () => ({
       accept: Draggable.CARD,
+
       hover(item: IItem) {
         if (item._id !== _id) {
           const resumeResult = findResume(item._id)
@@ -71,6 +76,7 @@ const useDrop = (_id: string, category: string, index: number) => {
           )
         }
       },
+
       drop(item) {
         const resumeResult = findResume(item._id)
         const category = findCategoryById(resumeResult.resume.category)

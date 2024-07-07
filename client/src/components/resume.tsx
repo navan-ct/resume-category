@@ -17,6 +17,7 @@ const Resume = ({ _id, name, category, index }: ResumeProps) => {
   const [isDragging, setIsDragging] = useState(false)
   const [, startTransition] = useTransition()
 
+  // Delay `isDragging` to display the preview image.
   useEffect(() => {
     startTransition(() => {
       setIsDragging(_isDragging)

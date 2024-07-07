@@ -50,6 +50,7 @@ export const resumeSlice = createSlice({
     moveResume(state, action: PayloadAction<IMoveResumePayload>) {
       const { resumeId, oldCategoryId, categoryId, atIndex } = action.payload
 
+      // Remove the resume from its current category.
       const oldCategory =
         state.uncategorized._id === oldCategoryId
           ? state.uncategorized
@@ -59,6 +60,7 @@ export const resumeSlice = createSlice({
         (item) => item._id !== resumeId
       )
 
+      // Add the resume to the new category at the given position.
       const category =
         state.uncategorized._id === categoryId
           ? state.uncategorized
@@ -75,10 +77,13 @@ export const resumeSlice = createSlice({
       const category = state.categories.find(
         (category) => category._id === action.payload
       )
+
+      // Move the resumes in the category to the default category.
       state.uncategorized.resumes = [
         ...state.uncategorized.resumes,
         ...category!.resumes
       ]
+
       state.categories = state.categories.filter(
         (category) => category._id !== action.payload
       )
