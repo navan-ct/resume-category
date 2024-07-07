@@ -1,6 +1,7 @@
 import { useDrag, useDrop } from 'react-dnd'
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
+import * as api from '../api/resume'
 import { useDispatch, useSelector } from '../hooks/redux'
 import {
   moveResume,
@@ -19,6 +20,15 @@ const Resume = ({ _id, name, category, index }: ResumeProps) => {
   const dispatch = useDispatch()
   const uncategorized = useSelector(selectUncategorized)
   const categories = useSelector(selectCategories)
+
+  const findCategoryById = useCallback(
+    (id: string) => {
+      return id === uncategorized._id
+        ? uncategorized
+        : categories.find((category) => category._id === id)
+    },
+    [uncategorized, categories]
+  )
 
   const findResume = useCallback(
     (resumeId: string) => {
@@ -72,9 +82,17 @@ const Resume = ({ _id, name, category, index }: ResumeProps) => {
             })
           )
         }
+      },
+      drop(item) {
+        const resumeResult = findResume(item._id)
+        const category = findCategoryById(resumeResult.resume.category)
+        api.updateResumeCategory(resumeResult.resume._id, {
+          categoryId: category!._id,
+          resumes: category!.resumes.map((resume) => resume._id)
+        })
       }
     }),
-    [findResume]
+    [findResume, findCategoryById]
   )
 
   const [isDragging, setIsDragging] = useState(false)
