@@ -25,7 +25,9 @@ const Category = ({
   }
 
   return (
-    <div className={`rounded-lg bg-neutral-100 px-4 pb-4 pt-3 ${className}`}>
+    <div
+      className={`flex-shrink-0 rounded-lg bg-neutral-100 px-4 pb-4 pt-3 ${className}`}
+    >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex-shrink-0 text-sm font-medium text-neutral-500">
           {name}

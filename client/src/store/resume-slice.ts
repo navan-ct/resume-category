@@ -115,20 +115,21 @@ export const fetchResumes = () => async (dispatch: StoreDispatch) => {
   }
 }
 
-export const addCategory = () => async (dispatch: StoreDispatch) => {
-  try {
-    dispatch(setIsLoading(true))
-    const category = await api.addCategory({ name: 'Untitled' })
-    if (category) {
-      dispatch(addCategoryAction(category))
+export const addCategory =
+  (name: string) => async (dispatch: StoreDispatch) => {
+    try {
+      dispatch(setIsLoading(true))
+      const category = await api.addCategory({ name })
+      if (category) {
+        dispatch(addCategoryAction(category))
+      }
+    } catch (_error) {
+      const error = _error as ResponseError
+      dispatch(setError(error.response?.data?.message || error.message))
+    } finally {
+      dispatch(setIsLoading(false))
     }
-  } catch (_error) {
-    const error = _error as ResponseError
-    dispatch(setError(error.response?.data?.message || error.message))
-  } finally {
-    dispatch(setIsLoading(false))
   }
-}
 
 export const removeCategoryById =
   (id: string) => async (dispatch: StoreDispatch) => {
