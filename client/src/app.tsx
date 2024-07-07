@@ -44,7 +44,7 @@ const App = () => {
 
         <div className="hide-scrollbar flex h-full w-[calc(60%-0.5rem)] flex-shrink-0 flex-col gap-y-4 overflow-y-scroll pt-[4.125rem]">
           <button
-            className="group flex h-12 flex-shrink-0 items-center justify-center rounded-lg border-[3px] border-dashed border-neutral-200"
+            className="group flex h-12 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border-[3px] border-dashed border-neutral-200"
             onClick={handleAdd}
             disabled={isLoading}
           >

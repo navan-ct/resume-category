@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import { nanoid } from 'nanoid'
 import { type StoreDispatch, type StoreState } from '.'
 import * as api from '../api/resume'
 import { type ResponseError } from '../utils/types'
@@ -20,6 +21,7 @@ export interface ICategory {
 export interface IResumeState {
   uncategorized: ICategory
   categories: ICategory[]
+  pendingRequests: Record<string, IPendingRequest[]>
   error: string | null
   isLoading: boolean
 }
@@ -31,6 +33,7 @@ const initialState: IResumeState = {
     resumes: []
   },
   categories: [],
+  pendingRequests: {},
   error: null,
   isLoading: false
 }
@@ -89,6 +92,25 @@ export const resumeSlice = createSlice({
       )
     },
 
+    addPendingRequest(state, action: PayloadAction<IAddPendingRequestPayload>) {
+      const { resumeId, request } = action.payload
+      if (state.pendingRequests[resumeId]) {
+        state.pendingRequests[resumeId].push(request)
+      } else {
+        state.pendingRequests[resumeId] = [request]
+      }
+    },
+
+    removePendingRequest(
+      state,
+      action: PayloadAction<IRemovePendingRequestPayload>
+    ) {
+      const { resumeId, requestId } = action.payload
+      state.pendingRequests[resumeId] = state.pendingRequests[resumeId].filter(
+        (request) => request.id !== requestId
+      )
+    },
+
     setError(state, action: PayloadAction<IResumeState['error']>) {
       state.error = action.payload
     },
@@ -103,6 +125,8 @@ export const {
   moveResume,
   addCategory: addCategoryAction,
   removeCategory,
+  addPendingRequest,
+  removePendingRequest,
   setError,
   setIsLoading
 } = resumeSlice.actions
@@ -114,6 +138,7 @@ export const fetchResumes = () => async (dispatch: StoreDispatch) => {
     dispatch(setResumes({ uncategorized, categories }))
   } catch (_error) {
     const error = _error as ResponseError
+    console.error(error)
     dispatch(setError(error.response?.data?.message || error.message))
   } finally {
     dispatch(setIsLoading(false))
@@ -130,6 +155,7 @@ export const addCategory =
       }
     } catch (_error) {
       const error = _error as ResponseError
+      console.error(error)
       dispatch(setError(error.response?.data?.message || error.message))
     } finally {
       dispatch(setIsLoading(false))
@@ -144,6 +170,46 @@ export const removeCategoryById =
       await api.removeCategory(id)
     } catch (_error) {
       const error = _error as ResponseError
+      console.error(error)
+      dispatch(setError(error.response?.data?.message || error.message))
+    } finally {
+      dispatch(setIsLoading(false))
+    }
+  }
+
+export const updateResumeCategory =
+  (resumeId: string, categoryId: string, resumes: string[]) =>
+  async (dispatch: StoreDispatch, getState: () => StoreState) => {
+    try {
+      dispatch(setIsLoading(true))
+
+      // Wait for the pending requests of the resume to be fulfilled.
+      const { pendingRequests } = getState().resume
+      if (pendingRequests[resumeId]?.length) {
+        await Promise.all(pendingRequests[resumeId].map((item) => item.promise))
+      }
+
+      const promise = api.updateResumeCategory(resumeId, {
+        categoryId,
+        resumes
+      })
+
+      // Queue a pending request and remove it after it's fulfilled.
+      const requestId = nanoid()
+      dispatch(
+        addPendingRequest({
+          resumeId,
+          request: {
+            id: requestId,
+            promise
+          }
+        })
+      )
+      await promise
+      dispatch(removePendingRequest({ resumeId, requestId }))
+    } catch (_error) {
+      const error = _error as ResponseError
+      console.error(error)
       dispatch(setError(error.response?.data?.message || error.message))
     } finally {
       dispatch(setIsLoading(false))
@@ -159,9 +225,24 @@ export const selectIsLoading = (state: StoreState) => state.resume.isLoading
 
 export default resumeSlice.reducer
 
+interface IPendingRequest {
+  id: string
+  promise: Promise<unknown>
+}
+
 interface IMoveResumePayload {
   resumeId: string
   oldCategoryId: string
   categoryId: string
   atIndex: number
+}
+
+interface IAddPendingRequestPayload {
+  resumeId: string
+  request: IPendingRequest
+}
+
+interface IRemovePendingRequestPayload {
+  resumeId: string
+  requestId: string
 }

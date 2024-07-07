@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 import { useDrag, useDrop } from 'react-dnd'
 
-import * as api from '../api/resume'
 import {
   type ICategory,
   moveResume,
   selectCategories,
-  selectUncategorized
+  selectUncategorized,
+  updateResumeCategory
 } from '../store/resume-slice'
 import { Draggable } from '../utils/constants'
 import { useDispatch, useSelector } from './redux'
@@ -91,10 +91,13 @@ const useDragDrop = (_id: string, category: string, index: number) => {
       drop(item) {
         const resumeResult = findResume(item._id)
         const category = findCategoryById(resumeResult.resume.category)
-        api.updateResumeCategory(resumeResult.resume._id, {
-          categoryId: category!._id,
-          resumes: category!.resumes.map((resume) => resume._id)
-        })
+        dispatch(
+          updateResumeCategory(
+            resumeResult.resume._id,
+            category!._id,
+            category!.resumes.map((resume) => resume._id)
+          )
+        )
       }
     }),
     [findResume, findCategoryById]
