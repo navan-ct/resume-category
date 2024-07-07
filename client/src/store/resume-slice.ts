@@ -1,6 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-import { nanoid } from 'nanoid'
 import { type StoreDispatch, type StoreState } from '.'
 import * as api from '../api/resume'
 import { type ResponseError } from '../utils/types'
@@ -21,7 +20,7 @@ export interface ICategory {
 export interface IResumeState {
   uncategorized: ICategory
   categories: ICategory[]
-  pendingRequests: Record<string, IPendingRequest[]>
+  pendingRequests: Record<string, Promise<unknown> | null>
   error: string | null
   isLoading: boolean
 }
@@ -92,23 +91,13 @@ export const resumeSlice = createSlice({
       )
     },
 
-    addPendingRequest(state, action: PayloadAction<IAddPendingRequestPayload>) {
-      const { resumeId, request } = action.payload
-      if (state.pendingRequests[resumeId]) {
-        state.pendingRequests[resumeId].push(request)
-      } else {
-        state.pendingRequests[resumeId] = [request]
-      }
+    setPendingRequest(state, action: PayloadAction<IAddPendingRequestPayload>) {
+      const { resumeId, promise } = action.payload
+      state.pendingRequests[resumeId] = promise
     },
 
-    removePendingRequest(
-      state,
-      action: PayloadAction<IRemovePendingRequestPayload>
-    ) {
-      const { resumeId, requestId } = action.payload
-      state.pendingRequests[resumeId] = state.pendingRequests[resumeId].filter(
-        (request) => request.id !== requestId
-      )
+    clearPendingRequest(state, action: PayloadAction<string>) {
+      state.pendingRequests[action.payload] = null
     },
 
     setError(state, action: PayloadAction<IResumeState['error']>) {
@@ -125,8 +114,8 @@ export const {
   moveResume,
   addCategory: addCategoryAction,
   removeCategory,
-  addPendingRequest,
-  removePendingRequest,
+  setPendingRequest,
+  clearPendingRequest,
   setError,
   setIsLoading
 } = resumeSlice.actions
@@ -183,10 +172,10 @@ export const updateResumeCategory =
     try {
       dispatch(setIsLoading(true))
 
-      // Wait for the pending requests of the resume to be fulfilled.
+      // Wait for the pending request of the resume to be fulfilled.
       const { pendingRequests } = getState().resume
-      if (pendingRequests[resumeId]?.length) {
-        await Promise.all(pendingRequests[resumeId].map((item) => item.promise))
+      if (pendingRequests[resumeId]) {
+        await pendingRequests[resumeId]
       }
 
       const promise = api.updateResumeCategory(resumeId, {
@@ -194,19 +183,15 @@ export const updateResumeCategory =
         resumes
       })
 
-      // Queue a pending request and remove it after it's fulfilled.
-      const requestId = nanoid()
+      // Set a pending request and clear it after it's fulfilled.
       dispatch(
-        addPendingRequest({
+        setPendingRequest({
           resumeId,
-          request: {
-            id: requestId,
-            promise
-          }
+          promise
         })
       )
       await promise
-      dispatch(removePendingRequest({ resumeId, requestId }))
+      dispatch(clearPendingRequest(resumeId))
     } catch (_error) {
       const error = _error as ResponseError
       console.error(error)
@@ -225,11 +210,6 @@ export const selectIsLoading = (state: StoreState) => state.resume.isLoading
 
 export default resumeSlice.reducer
 
-interface IPendingRequest {
-  id: string
-  promise: Promise<unknown>
-}
-
 interface IMoveResumePayload {
   resumeId: string
   oldCategoryId: string
@@ -239,10 +219,5 @@ interface IMoveResumePayload {
 
 interface IAddPendingRequestPayload {
   resumeId: string
-  request: IPendingRequest
-}
-
-interface IRemovePendingRequestPayload {
-  resumeId: string
-  requestId: string
+  promise: Promise<unknown>
 }
