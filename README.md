@@ -11,7 +11,7 @@ npm run server:install
 npm run client:install
 ```
 
-### Start the server and client
+### Start the server and the client
 
 ```
 npm run server:dev
