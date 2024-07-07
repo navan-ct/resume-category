@@ -8,6 +8,7 @@ import {
   addCategory,
   fetchResumes,
   selectCategories,
+  selectIsLoading,
   selectUncategorized
 } from './store/resume-slice'
 
@@ -15,6 +16,7 @@ const App = () => {
   const dispatch = useDispatch()
   const uncategorized = useSelector(selectUncategorized)
   const categories = useSelector(selectCategories)
+  const isLoading = useSelector(selectIsLoading)
 
   useEffect(() => {
     dispatch(fetchResumes())
@@ -44,6 +46,7 @@ const App = () => {
           <button
             className="group flex h-12 flex-shrink-0 items-center justify-center rounded-lg border-[3px] border-dashed border-neutral-200"
             onClick={handleAdd}
+            disabled={isLoading}
           >
             <AddIcon className="h-6 w-6 fill-neutral-400 transition-all group-hover:fill-neutral-500" />
           </button>
