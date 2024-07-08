@@ -33,3 +33,16 @@ export const updateCategory: RequestHandler = async (
     next(error)
   }
 }
+
+export const batchUpdateCategory: RequestHandler = async (
+  request,
+  response,
+  next
+) => {
+  try {
+    const resume = await resumeService.batchUpdateCategory(request.body)
+    response.status(200).json({ resume })
+  } catch (error) {
+    next(error)
+  }
+}

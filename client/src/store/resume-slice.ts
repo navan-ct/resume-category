@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 import { type StoreDispatch, type StoreState } from '.'
 import * as api from '../api/resume'
+import { StorageKey } from '../utils/constants'
 import { type ResponseError } from '../utils/types'
 
 export interface IResume {
@@ -20,7 +21,7 @@ export interface ICategory {
 export interface IResumeState {
   uncategorized: ICategory
   categories: ICategory[]
-  pendingRequests: Record<string, Promise<unknown> | null>
+  pendingRequest: Promise<void> | null
   error: string | null
   isLoading: boolean
 }
@@ -32,7 +33,7 @@ const initialState: IResumeState = {
     resumes: []
   },
   categories: [],
-  pendingRequests: {},
+  pendingRequest: null,
   error: null,
   isLoading: false
 }
@@ -91,13 +92,11 @@ export const resumeSlice = createSlice({
       )
     },
 
-    setPendingRequest(state, action: PayloadAction<IAddPendingRequestPayload>) {
-      const { resumeId, promise } = action.payload
-      state.pendingRequests[resumeId] = promise
-    },
-
-    clearPendingRequest(state, action: PayloadAction<string>) {
-      state.pendingRequests[action.payload] = null
+    setPendingRequest(
+      state,
+      action: PayloadAction<IResumeState['pendingRequest']>
+    ) {
+      state.pendingRequest = action.payload
     },
 
     setError(state, action: PayloadAction<IResumeState['error']>) {
@@ -115,7 +114,6 @@ export const {
   addCategory: addCategoryAction,
   removeCategory,
   setPendingRequest,
-  clearPendingRequest,
   setError,
   setIsLoading
 } = resumeSlice.actions
@@ -167,36 +165,26 @@ export const removeCategoryById =
   }
 
 export const updateResumeCategory =
-  (resumeId: string, categoryId: string, resumes: string[]) =>
-  async (dispatch: StoreDispatch, getState: () => StoreState) => {
+  () => async (dispatch: StoreDispatch, getState: () => StoreState) => {
     try {
-      dispatch(setIsLoading(true))
-
-      // Wait for the pending request of the resume to be fulfilled.
-      const { pendingRequests } = getState().resume
-      console.log('PENDING REQUESTS', pendingRequests)
-      if (pendingRequests[resumeId]) {
-        console.log('AWAITING PENDING REQUESTS')
-        await pendingRequests[resumeId]
-        console.log('PENDING REQUESTS FULFILLED')
+      // Wait for any pending request to be fulfilled.
+      const { pendingRequest } = getState().resume
+      if (pendingRequest) {
+        await pendingRequest
       }
 
-      const promise = api.updateResumeCategory(resumeId, {
-        categoryId,
-        resumes
-      })
-
-      // Set a pending request and clear it after it's fulfilled.
-      dispatch(
-        setPendingRequest({
-          resumeId,
-          promise
-        })
+      dispatch(setIsLoading(true))
+      const data = JSON.parse(
+        localStorage.getItem(StorageKey.REQUEST_DATA) || '{}'
       )
-      console.log('AWAITING PROMISE')
-      await promise
-      console.log('PROMISE FULFILLED')
-      dispatch(clearPendingRequest(resumeId))
+      const request = api.updateResumeCategory(Object.values(data))
+
+      // Block any new requests till this one is fulfilled.
+      dispatch(setPendingRequest(request))
+      await request
+      dispatch(setPendingRequest(null))
+
+      localStorage.removeItem(StorageKey.REQUEST_DATA)
     } catch (_error) {
       const error = _error as ResponseError
       console.error(error)
@@ -220,9 +208,4 @@ interface IMoveResumePayload {
   oldCategoryId: string
   categoryId: string
   atIndex: number
-}
-
-interface IAddPendingRequestPayload {
-  resumeId: string
-  promise: Promise<unknown>
 }

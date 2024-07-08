@@ -21,7 +21,7 @@ export const getResumes = async () => {
   return resumes
 }
 
-export const updateCategory = async (
+const draftUpdateCategory = async (
   resumeId: string,
   categoryId: string,
   resumes: string[]
@@ -33,9 +33,10 @@ export const updateCategory = async (
     ? await findCategoryByIdOrFail(categoryId)
     : resume.category
 
+  let currentCategory: HydratedDocument<ICategory> | null = null
   if (hasCategoryChanged) {
     // Remove the resume from its current category.
-    const currentCategory = resume.category
+    currentCategory = resume.category
     currentCategory.resumes = currentCategory.resumes.filter((resume) => {
       return !resume.equals(resumeId)
     })
@@ -49,5 +50,52 @@ export const updateCategory = async (
   category.resumes = resumes.map((id) => new Types.ObjectId(id))
   await category.save()
 
+  return { resume, currentCategory, category }
+}
+
+export const updateCategory = async (
+  resumeId: string,
+  categoryId: string,
+  resumes: string[]
+) => {
+  const { resume, currentCategory, category } = await draftUpdateCategory(
+    resumeId,
+    categoryId,
+    resumes
+  )
+  if (currentCategory) {
+    currentCategory.save()
+    resume.save()
+  }
+  category.save()
   return resume.toJSON()
+}
+
+interface IBatchUpdateCategoryItem {
+  resumeId: string
+  categoryId: string
+  resumes: string[]
+}
+
+export const batchUpdateCategory = async (data: IBatchUpdateCategoryItem[]) => {
+  const resumes: Awaited<ReturnType<typeof findResumeByIdOrFail>>[] = []
+  const categories: Record<string, HydratedDocument<ICategory>> = {}
+
+  for (const item of data) {
+    const { resume, currentCategory, category } = await draftUpdateCategory(
+      item.resumeId,
+      item.categoryId,
+      item.resumes
+    )
+    if (currentCategory) {
+      categories[currentCategory.id] = currentCategory
+      resumes.push(resume)
+    }
+    categories[category.id] = category
+  }
+
+  await Resume.bulkSave(resumes)
+  await Category.bulkSave(Object.values(categories))
+
+  return resumes.map((item) => item.toJSON())
 }

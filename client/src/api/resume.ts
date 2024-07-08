@@ -13,17 +13,15 @@ export const fetchResumes = async () => {
   }
 }
 
-export interface IUpdateResumeCategoryBody {
+export interface IUpdateResumeRequest {
+  resumeId: string
   categoryId: string
   resumes: string[]
 }
 
-export const updateResumeCategory = async (
-  resumeId: string,
-  body: IUpdateResumeCategoryBody
-) => {
+export const updateResumeCategory = async (body: IUpdateResumeRequest[]) => {
   try {
-    await axios.patch(`/resume/${resumeId}`, body, config)
+    await axios.patch(`/resume/category/batch`, body, config)
   } catch (error) {
     console.error(error)
   }
