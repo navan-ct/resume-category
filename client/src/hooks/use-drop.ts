@@ -1,18 +1,20 @@
+import debounce from 'lodash.debounce'
 import { useCallback } from 'react'
 import { useDrop as useDropDnd } from 'react-dnd'
 
-import * as api from '../api/resume'
 import {
   type ICategory,
   moveResume,
   selectCategories,
-  selectUncategorized
+  selectUncategorized,
+  updateResumeCategory
 } from '../store/resume-slice'
-import { Draggable } from '../utils/constants'
+import { Draggable, StorageKey } from '../utils/constants'
 import { useDispatch, useSelector } from './redux'
 
 interface IItem {
   _id: string
+  category: string
 }
 
 const useDrop = (_id: string, category: string, index: number) => {
@@ -59,6 +61,10 @@ const useDrop = (_id: string, category: string, index: number) => {
     [uncategorized, categories]
   )
 
+  const debouncedUpdateResumeCategory = debounce(() => {
+    dispatch(updateResumeCategory())
+  }, 500)
+
   const [, drop] = useDropDnd(
     () => ({
       accept: Draggable.CARD,
@@ -80,10 +86,21 @@ const useDrop = (_id: string, category: string, index: number) => {
       drop(item) {
         const resumeResult = findResume(item._id)
         const category = findCategoryById(resumeResult.resume.category)
-        api.updateResumeCategory(resumeResult.resume._id, {
+
+        if (item.category === category!._id) return
+
+        // Batch and store the request data.
+        const data = JSON.parse(
+          localStorage.getItem(StorageKey.REQUEST_DATA) || '{}'
+        )
+        data[resumeResult.resume._id] = {
+          resumeId: resumeResult.resume._id,
           categoryId: category!._id,
           resumes: category!.resumes.map((resume) => resume._id)
-        })
+        }
+        localStorage.setItem(StorageKey.REQUEST_DATA, JSON.stringify(data))
+
+        debouncedUpdateResumeCategory()
       }
     }),
     [findResume, findCategoryById]
