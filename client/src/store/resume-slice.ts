@@ -174,8 +174,11 @@ export const updateResumeCategory =
 
       // Wait for the pending request of the resume to be fulfilled.
       const { pendingRequests } = getState().resume
+      console.log('PENDING REQUESTS', pendingRequests)
       if (pendingRequests[resumeId]) {
+        console.log('AWAITING PENDING REQUESTS')
         await pendingRequests[resumeId]
+        console.log('PENDING REQUESTS FULFILLED')
       }
 
       const promise = api.updateResumeCategory(resumeId, {
@@ -190,7 +193,9 @@ export const updateResumeCategory =
           promise
         })
       )
+      console.log('AWAITING PROMISE')
       await promise
+      console.log('PROMISE FULFILLED')
       dispatch(clearPendingRequest(resumeId))
     } catch (_error) {
       const error = _error as ResponseError
